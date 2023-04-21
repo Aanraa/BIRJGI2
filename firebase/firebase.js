@@ -3,13 +3,12 @@ import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 
 const firebaseConfig = {
-    apiKey: "AIzaSyBC6fgVwFz-PUsosoveTW1sgof_xqWNZes",
-    authDomain: "todo-app-f769a.firebaseapp.com",
-    projectId: "todo-app-f769a",
-    storageBucket: "todo-app-f769a.appspot.com",
-    messagingSenderId: "127294715055",
-    appId: "1:127294715055:web:d4a9149bef3e243784105a",
-    measurementId: "G-Q79Z1PGGC6",
+  apiKey: "AIzaSyDUk4Y_DkdCYjAyAwpCWl0pwLC--rg8d3I",
+  authDomain: "birjgi.firebaseapp.com",
+  projectId: "birjgi",
+  storageBucket: "birjgi.appspot.com",
+  messagingSenderId: "677878599828",
+  appId: "1:677878599828:web:c1c1d0b44760ccabe52481",
 };
 
 const app = initializeApp(firebaseConfig);

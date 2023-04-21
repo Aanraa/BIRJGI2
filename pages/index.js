@@ -1,200 +1,81 @@
-import { useEffect, useState } from "react";
-import { AiOutlinePlus } from "react-icons/ai";
-import { MdDeleteForever } from "react-icons/md";
-import { GoSignOut } from "react-icons/go";
-import { useAuth } from "@/firebase/auth";
-import { useRouter } from "next/router";
-import Loader from "@/components/Loader";
-import {
-    collection,
-    addDoc,
-    getDocs,
-    where,
-    query,
-    deleteDoc,
-    updateDoc,
-    doc,
-} from "firebase/firestore";
-import { db } from "../firebase/firebase";
+import Head from "next/head";
+import Header from "../components/Header";
+import { NextSeo } from "next-seo";
+import CountUp from "react-countup";
+import VisibilitySensor from "react-visibility-sensor";
 
 export default function Home() {
-    const [todoInput, setTodoInput] = useState("");
-    const [todos, setTodos] = useState([]);
-
-    const { signOut, authUser, isLoading } = useAuth();
-    const router = useRouter();
-
-    useEffect(() => {
-        if (!isLoading && !authUser) {
-            router.push("/login");
-        }
-        if (!!authUser) {
-            fetchTodos(authUser.uid);
-        }
-    }, [authUser, isLoading]);
-
-    /**
-     * Fetches all the todos for a given user ID from Firestore and sets the todos state with the data.
-     *
-     * @param {string} uid - The user ID to fetch todos for.
-     * @return {void}
-     */
-    const fetchTodos = async (uid) => {
-        try {
-            // Create a Firestore query to fetch all the todos for the user with the given ID.
-            const q = query(collection(db, "todos"), where("owner", "==", uid));
-
-            // Execute the query and get a snapshot of the results.
-            const querySnapshot = await getDocs(q);
-
-            // Extract the data from each todo document and add it to the data array.
-            let data = [];
-            querySnapshot.forEach((todo) => {
-                console.log(todo);
-                data.push({ ...todo.data(), id: todo.id });
-            });
-
-            // Set the todos state with the data array.
-            setTodos(data);
-        } catch (error) {
-            console.error("An error occured", error);
-        }
-    };
-
-    const onKeyUp = (event) => {
-        if (event?.key === "Enter" && todoInput?.length > 0) {
-            addToDo();
-        }
-    };
-
-    const addToDo = async () => {
-        try {
-            // Add a new todo document to the "todos" collection in Firestore with the current user's ID,
-            // the content of the todo input, and a completed status of false.
-            const docRef = await addDoc(collection(db, "todos"), {
-                owner: authUser.uid,
-                content: todoInput,
-                completed: false,
-            });
-
-            // After adding the new todo, fetch all todos for the current user and update the state with the new data.
-            fetchTodos(authUser.uid);
-
-            // Clear the todo input field.
-            setTodoInput("");
-        } catch (error) {
-            console.error("An error occured", error);
-        }
-    };
-
-    const deleteTodo = async (docId) => {
-        try {
-            // Delete the todo document with the given ID from the "todos" collection in Firestore.
-            await deleteDoc(doc(db, "todos", docId));
-
-            // After deleting the todo, fetch all todos for the current user and update the state with the new data.
-            fetchTodos(authUser.uid);
-        } catch (error) {
-            console.error("An error occured", error);
-        }
-    };
-
-    const makeAsCompleteHander = async (event, docId) => {
-        try {
-            // Get a reference to the todo document with the given ID in the "todos" collection in Firestore.
-            const todoRef = doc(db, "todos", docId);
-
-            // Update the "completed" field of the todo document to the value of the "checked" property of the event target.
-            await updateDoc(todoRef, {
-                completed: event.target.checked,
-            });
-
-            // After updating the todo, fetch all todos for the current user and update the state with the new data.
-            fetchTodos(authUser.uid);
-        } catch (error) {
-            console.error("An error occured", error);
-        }
-    };
-
-    return !authUser ? (
-        <Loader />
-    ) : (
-        <main className="">
-            <div
-                className="bg-black text-white w-44 py-4 mt-10 rounded-lg transition-transform hover:bg-black/[0.8] active:scale-90 flex items-center justify-center gap-2 font-medium shadow-md fixed bottom-5 right-5 cursor-pointer"
-                onClick={signOut}
-            >
-                <GoSignOut size={18} />
-                <span>Logout</span>
+  return (
+    <div className="text-black">
+      <NextSeo title="Home: BIRJGI" description="Welcome to BIRJGI homepage." />
+      <Head>
+        <title>BIRJGI</title>
+        <link rel="icon" href="/favicon.ico" />
+      </Head>
+      <Header />
+      <section className="text-gray-600 body-font ">
+        <div className="max-w-7xl mx-auto  flex px-5 py-36 md:flex-row flex-col items-center justify-center ">
+          <div className="lg:flex-grow md:w-1/2 md:ml-24 pt-6 flex flex-col md:items-start md:text-left mb-40 items-center text-center">
+            <h1 className="mb-5 sm:text-6xl text-5xl items-center Avenir xl:w-2/2 text-gray-900 ">
+              Хамгийн амттай пирошки
+            </h1>
+            <p className="mb-4 xl:w-3/4 text-gray-600 text-lg">
+              Гайхалтай 5-дах өдрийг Этүгэний пирошкитой хамт өнгөрөөнө гэдэг
+              магадгүй танд сайхан мэдрэмж төрүүлж мэдэх юм.
+            </p>
+            <div className="flex justify-center">
+              <a
+                className="inline-flex items-center px-5 py-3 mt-2 font-medium text-white transition duration-500 ease-in-out transform bg-transparent border bg-slate-700 rounded-lg  hover:bg-slate-800"
+                href="/order"
+              >
+                <span className="justify-center ">Захиалах{" ->"}</span>
+              </a>
             </div>
-            <div className="max-w-3xl mx-auto mt-10 p-8">
-                <div className="bg-white -m-6 p-3 sticky top-0">
-                    <div className="flex justify-center flex-col items-center">
-                        <span className="text-7xl mb-10">📝</span>
-                        <h1 className="text-5xl md:text-7xl font-bold">
-                            ToooDooo's
-                        </h1>
-                    </div>
-                    <div className="flex items-center gap-2 mt-10">
-                        <input
-                            placeholder={`👋 Hello ${authUser.username}, What to do Today?`}
-                            type="text"
-                            className="font-semibold placeholder:text-gray-500 border-[2px] border-black h-[60px] grow shadow-sm rounded-md px-4 focus-visible:outline-yellow-400 text-lg transition-all duration-300"
-                            autoFocus
-                            value={todoInput}
-                            onChange={(e) => setTodoInput(e.target.value)}
-                            onKeyUp={(e) => onKeyUp(e)}
-                        />
-                        <button
-                            className="w-[60px] h-[60px] rounded-md bg-black flex justify-center items-center cursor-pointer transition-all duration-300 hover:bg-black/[0.8]"
-                            onClick={addToDo}
-                        >
-                            <AiOutlinePlus size={30} color="#fff" />
-                        </button>
-                    </div>
+          </div>
+          <div className="xl:mr-44 sm:mr-0 sm:mb-28 mb-0 lg:mb-0 mr-48 md:pl-10 flex ">
+            <img
+              className="w-96 md:ml-1 ml-24 h-auto"
+              alt="iPhone-12"
+              src="/delivery.svg"
+            ></img>
+          </div>
+        </div>
+        <div>
+          <section className="text-gray-600 body-font">
+            <div className="container px-5 py-5 mx-auto">
+              <div className="flex flex-wrap -m-4 text-center justify-center mb-20">
+                <div className="p-4 sm:w-1/3 w-1/2">
+                  <h2 className="title-font font-medium sm:text-5xl text-3xl text-black">
+                    <CountUp end={10} redraw={true}>
+                      {({ countUpRef, start }) => (
+                        <VisibilitySensor onChange={start} delayedCall>
+                          <span ref={countUpRef} />
+                        </VisibilitySensor>
+                      )}
+                    </CountUp>
+                  </h2>
+                  <p className="leading-relaxed">Хэрэглэгч</p>
                 </div>
-                <div className="my-10">
-                    {todos.length > 0 &&
-                        todos.map((todo) => (
-                            <div
-                                key={todo.id}
-                                className="flex items-center justify-between mt-4"
-                            >
-                                <div className="flex items-center gap-3">
-                                    <input
-                                        id={`todo-${todo.id}`}
-                                        type="checkbox"
-                                        className="w-4 h-4 accent-green-400 rounded-lg"
-                                        checked={todo.completed}
-                                        onChange={(e) =>
-                                            makeAsCompleteHander(e, todo.id)
-                                        }
-                                    />
-                                    <label
-                                        htmlFor={`todo-${todo.id}`}
-                                        className={`font-medium ${
-                                            todo.completed ? "line-through" : ""
-                                        }`}
-                                    >
-                                        {todo.content}
-                                    </label>
-                                </div>
-
-                                <div className="flex items-center gap-3">
-                                    <MdDeleteForever
-                                        size={24}
-                                        className="text-red-400 hover:text-red-600 cursor-pointer"
-                                        onClick={() => deleteTodo(todo.id)}
-                                    />
-                                </div>
-                            </div>
-                        ))}
-
-                    {todos.length < 1 && (
-                        <span className="text-center w-full block text-2xl font-medium text-gray-400 mt-28">{`🥹 You don't have todo's`}</span>
-                    )}
+                <div className="p-4 sm:w-1/3 w-1/2">
+                  <h2 className="title-font font-medium sm:text-5xl text-3xl text-black">
+                    <CountUp end={345} redraw={true}>
+                      {({ countUpRef, start }) => (
+                        <VisibilitySensor onChange={start} delayedCall>
+                          <span ref={countUpRef} />
+                        </VisibilitySensor>
+                      )}
+                    </CountUp>
+                  </h2>
+                  <p className="leading-relaxed">Нийт захиалсан пирошки</p>
                 </div>
+              </div>
             </div>
-        </main>
-    );
+          </section>
+        </div>
+        <section className="mx-auto">
+          <div className="container px-5 mx-auto lg:px-24 "></div>
+        </section>
+      </section>
+    </div>
+  );
 }
